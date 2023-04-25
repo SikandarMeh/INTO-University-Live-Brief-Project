@@ -1,0 +1,76 @@
+WITH table AS (
+WITH enrollments AS
+(SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2020`
+UNION ALL
+SELECT * 
+FROM  `INTO_Live_Brief.Fall_Enrollments_2019`
+UNION ALL
+SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2018`
+UNION ALL
+SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2017`
+UNION ALL
+SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2016`
+UNION ALL
+SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2015`
+UNION ALL
+SELECT * 
+FROM `INTO_Live_Brief.Fall_Enrollments_2014`
+)
+SELECT Unit_Id,
+Institution_name,
+STABBR AS State,
+CASE
+    WHEN Total = '-' THEN 0
+     ELSE CAST(REPLACE(Total, ',', '') AS INT)
+    END AS Total_int,
+CASE
+    WHEN In_state___Number = '-' THEN 0
+     ELSE CAST(REPLACE(In_state___Number, ',', '') AS INT)
+    END AS In_state___Number_int,
+CASE
+    WHEN Out_of_state___Number = '-' THEN 0
+     ELSE CAST(REPLACE(Out_of_state___Number, ',', '') AS INT)
+    END AS Out_of_state___Number_int,
+CASE
+    WHEN Foreign_countries___Number = '-' THEN 0
+     ELSE CAST(REPLACE(Foreign_countries___Number, ',', '') AS INT)
+    END AS Foreign_countries___Number_int,
+CASE
+    WHEN Unknown___Number = '-' THEN 0
+     ELSE CAST(REPLACE(Unknown___Number, ',', '') AS INT)
+    END AS Unknown___Number_int,
+city,
+OBEREG,
+ICLEVEL,
+HLOFFER,
+LOCALE,
+OPENPUBL,
+COUNTYNM,
+year
+FROM enrollments e
+LEFT JOIN `INTO_Live_Brief.Data_Dictionary_2020` d
+ON e.Unit_id = d.UNITID
+WHERE 
+ICLEVEL = 1
+AND OPENPUBL = 1 
+AND HLOFFER > 4
+AND CYACTIVE = 1
+AND (LOCALE !=13 AND LOCALE != 23 AND LOCALE !=33 AND LOCALE != 41 AND LOCALE != 42 AND LOCALE != 43)
+
+--to search for particular unis
+--Institution_name LIKE "%Pima Medical Institute%"
+
+ORDER BY  year DESC, Foreign_countries___Number_int DESC)
+SELECT *, 
+CASE
+WHEN State = 'CO' OR State = 'NJ' OR State = 'VA' OR State = 'NY' OR State = 'IL' OR State = 'OR' OR State = 'MA' OR State = 'MO' OR State = 'AL' OR State = 'AZ'
+THEN 1
+ELSE 0
+END AS Already_INTO_State 
+FROM table
+
